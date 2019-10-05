@@ -1,5 +1,4 @@
 // index.js是服务器调用的接口
-
 var express = require('express');
 var router = express.Router();
 
@@ -9,10 +8,12 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'BY&K！~~~"' });
 });
 
+// demo
 router.get('/giveSomeJson', function(req, res, next) {
   res.json({
-    'title':'jsonObj',
-    'time':Date.parse(new Date())
+    'title': 'jsonObj',
+    '_time': new Date(),
+    'time': Date.parse(new Date())
   })
 });
 

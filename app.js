@@ -4,10 +4,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-// ===路由信息(接口地址)开始存放在./routes目录下===
-var indexRouter = require('./routes/index');    // home page 接口
-var usersRouter = require('./routes/users');    // 用户接口
-
 var app = express();
 
 app.all('*', function (req, res, next) {
@@ -34,20 +30,50 @@ app.all('*', function (req, res, next) {
 
 // view engine setup
 // === 模板开始 ===
+//使用ejs/jade模板引擎   默认找views这个目录
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+//配置public目录为我们的静态资源目录
+app.use(express.static('public'));
+app.use('/upload',express.static('upload'));
+
 var engine = require('ejs-mate');//添加引用
 
-app.set('views', path.join(__dirname, 'views'));//在app.js中找到这个行
-app.set('view engine', 'ejs');//修改jade为ejs
-app.engine('ejs', engine);//添加这行
+// 获取post
+var multiparty = require('multiparty');  /*图片上传模块  即可以获取form表单的数据 也可以实现上传图片*/
+
+// 获取post
+var bodyParser = require('body-parser');
+// //配置body-parser中间件
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+// parse application/json
+app.use(bodyParser.json());
+
+// 后台管理系统 session保存用户信息
+var session = require('express-session');
+// 设置官方文档提供的中间件
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        maxAge:1000*60*60
+    },
+    rolling:true
+}));
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ===路由信息(接口地址)开始存放在./routes目录下===
+var indexRouter = require('./routes/index');    // home page 接口
+var usersRouter = require('./routes/users');    // 用户接口
+
 
 app.use('/', indexRouter);  // 在app中注册routes该接口
 app.use('/users', usersRouter);     // 在app中注册users接口
