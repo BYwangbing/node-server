@@ -1,4 +1,3 @@
-
 // 数据库操作
 var MongoClient = require('mongodb').MongoClient; //引入模块
 var DbUrl = 'mongodb://127.0.0.1:27017/student';//连接数据库
