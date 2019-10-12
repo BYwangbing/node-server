@@ -1,9 +1,20 @@
 const db = require('../../modelus/db');
 const express = require('express');
 const svgCaptcha = require('svg-captcha')
-const session = require('express-session');
 const router = express.Router();
 var receive_captcha;
+
+const cookieParser = require('cookie-parser');
+router.use(cookieParser());
+const session = require('express-session');
+// 设置官方文档提供的中间件
+router.use(session({
+    secret: 'keyboard cat', //值可以随便取
+    resave: false, //即使 session 没有被修改，也保存 session 值，默认为 true
+    saveUninitialized: true,
+    rolling:true ,//只要页面由刷新，session值就会被保存
+    cookie: { secure: true }   /*secure https这样的情况才可以访问cookie*/
+}));
 
 // 设置官方文档提供的中间件
 router.use(session({
@@ -39,8 +50,8 @@ router.get('/captcha', function (req, res) {
         background: '#EFEFEF' // 验证码图片背景颜色
     });
     receive_captcha = captcha.text.toLowerCase()
-    // req.session.captcha = captcha.text.toLowerCase();
-    // console.log(req.session.captcha);
+    req.session.captcha = captcha.text.toLowerCase();
+    console.log(req.session.captcha);
     res.type('svg');
     res.send(captcha.data)
 });
@@ -48,9 +59,7 @@ router.get('/captcha', function (req, res) {
 router.post('/login', function (req, res, next) {
     const username = req.body.username;
     const password = req.body.password;
-    const captcha = req.body.captcha.toLowerCase()
-    // 拿到前台传过来的值
-    console.log(req.body);
+    const captcha = req.body.captcha.toLowerCase();
     //  用户名密码非空判断
     if (username === '' || password === '') {
         resData.code = 1;
@@ -65,8 +74,8 @@ router.post('/login', function (req, res, next) {
         res.json(resData);
         return;
     }
-    // 删除保存的验证码
-    // delete req.session.captcha
+    // 删除保存的验证码 
+    delete req.session.captcha
     //查询数据库验证用户名和密码
     db.find('user', {
         username: username,
@@ -82,7 +91,9 @@ router.post('/login', function (req, res, next) {
         resData.code = 0;
         resData.message = '登录成功';
         resData.data = data[0];
-        req.session.userInfo = data[0];
+        req.session.user = data[0];
+        // 登录成功后，把username保存下, 以后的请求通过该session中的username来判断
+        req.session.username = req.body.username;
         res.json(resData);
         return;
     })
@@ -104,7 +115,7 @@ router.post('/register', function (req, res, next) {
         return;
     } else if (!regEmail.test(email)) {
         resData.code = 1;
-        resData.message = '邮箱格式不正确',
+        resData.message = '邮箱格式不正确';
             res.json(resData); //使用res.json的方法返回前端数据
         return;
     }
@@ -166,9 +177,16 @@ router.get('/loginOut', function (req, res) {
         if (err) {
             console.log(err);
         } else {
-            res.send('用户已登出')
+            resData.code = 0;
+            resData.message = '用户已登出';
+            res.json(resData);
+            return;
         }
     })
+    // if (req.session.username) {
+    //     req.session.username = '';
+    //     return res.send({'code': 1, 'session': true }); // session 为true说明session过期了
+    //   }
 });
 
 module.exports = router;

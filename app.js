@@ -6,16 +6,15 @@ const logger = require('morgan');
 const app = express();
 
 const cookieParser = require('cookie-parser');
-const session = require('express-session');
 app.use(cookieParser());
+const session = require('express-session');
 // 设置官方文档提供的中间件
 app.use(session({
-    secret: 'keyboard cat',
-    resave: false,
+    secret: 'keyboard cat', //值可以随便取
+    resave: false, //即使 session 没有被修改，也保存 session 值，默认为 true
     saveUninitialized: true,
-    cookie: {
-        maxAge: 1000 * 60 * 60
-    },
+    rolling:true ,//只要页面由刷新，session值就会被保存
+    cookie: { secure: true }   /*secure https这样的情况才可以访问cookie*/
 }));
 
 //设置跨域访问
@@ -49,11 +48,6 @@ app.set('view engine', 'jade');
 //配置public目录为我们的静态资源目录
 app.use(express.static('public'));
 app.use('/upload',express.static('upload'));
-
-const engine = require('ejs-mate');//添加引用
-
-// 获取post
-const multiparty = require('multiparty');  /*图片上传模块  即可以获取form表单的数据 也可以实现上传图片*/
 
 // 获取post
 const bodyParser = require('body-parser');
