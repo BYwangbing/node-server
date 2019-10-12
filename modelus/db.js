@@ -22,6 +22,9 @@ function __connectDb(callback) {
     })
 * */
 // 查找
+
+var start = 1;           //这边可以改为接收参数后的计算
+var pageSize = 10; //每一页显示的数据条数
 exports.find = function (collectionName, json, callback) {
     __connectDb(function (db) {
         var my_db = db.db('student');
@@ -30,7 +33,6 @@ exports.find = function (collectionName, json, callback) {
             if (error) {
                 console.log('查找数据失败');
             }
-            // console.log(data);
             callback(error, data);
             db.close();
         })
@@ -41,7 +43,6 @@ exports.insert = function (collectionName, json, callback) {
     __connectDb(function (db) {
         var my_db = db.db('student');
         my_db.collection(collectionName).insertOne(json, function (error,data) {
-            // console.log(data);
             callback(error, data);
             db.close();
         })
@@ -52,7 +53,6 @@ exports.delete = function (collectionName, json, callback) {
     __connectDb(function (db) {
         var my_db = db.db('student');
         my_db.collection(collectionName).deleteOne(json, function (error,data) {
-            // console.log(data);
             callback(error, data);
             db.close();
         })
@@ -63,7 +63,6 @@ exports.modify = function (collectionName, json_1, json_2, callback) {
     __connectDb(function (db) {
         var my_db = db.db('student');
         my_db.collection(collectionName).updateOne(json_1, {$set: json_2}, function (error,data) {
-            // console.log(data);
             callback(error, data);
             db.close();
         })
